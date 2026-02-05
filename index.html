@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fly Recipe Cards - Preview</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Sans+KR:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ========== THEME VARIABLES ========== */
+  [data-theme="dark"] {
+    --bg: #0a0a0b;
+    --surface: #141416;
+    --surface-hover: #1c1c20;
+    --border: #2a2a2e;
+    --border-hover: #3a3a40;
+    --text: #e4e4e7;
+    --text-dim: #71717a;
+    --accent: #ef4444;
+    --accent-soft: rgba(239,68,68,0.12);
+    --blue: #3b82f6;
+    --blue-soft: rgba(59,130,246,0.12);
+    --row-line: rgba(255,255,255,0.04);
+    --memo-bg: rgba(255,255,255,0.02);
+    --code-bg: rgba(255,255,255,0.06);
+    --placeholder-from: #1a3a5c;
+    --placeholder-to: #0f2234;
+    --lightbox-bg: rgba(0,0,0,0.88);
+  }
+
+  [data-theme="light"] {
+    --bg: #f4f4f2;
+    --surface: #ffffff;
+    --surface-hover: #f9f9f7;
+    --border: #ddddd9;
+    --border-hover: #c5c5c0;
+    --text: #1c1c1e;
+    --text-dim: #6e6e80;
+    --accent: #dc2626;
+    --accent-soft: rgba(220,38,38,0.07);
+    --blue: #2563eb;
+    --blue-soft: rgba(37,99,235,0.07);
+    --row-line: rgba(0,0,0,0.05);
+    --memo-bg: rgba(0,0,0,0.02);
+    --code-bg: rgba(0,0,0,0.04);
+    --placeholder-from: #c0daf0;
+    --placeholder-to: #a3c4e0;
+    --lightbox-bg: rgba(255,255,255,0.92);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    transition: background 0.35s ease, color 0.25s ease;
+  }
+
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 60px 24px;
+  }
+
+  /* ========== THEME TOGGLE ========== */
+  .theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 100;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    transition: background 0.25s, border-color 0.25s, transform 0.15s, box-shadow 0.25s;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+  }
+
+  .theme-toggle:hover {
+    border-color: var(--border-hover);
+    transform: scale(1.08);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+  }
+
+  .theme-toggle:active {
+    transform: scale(0.94);
+  }
+
+  /* ========== LIGHTBOX ========== */
+  .lightbox-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 500;
+    background: var(--lightbox-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    cursor: zoom-out;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .lightbox-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .lightbox-overlay img {
+    max-width: 92vw;
+    max-height: 90vh;
+    border-radius: 8px;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.35);
+    transform: scale(0.88);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    object-fit: contain;
+  }
+
+  .lightbox-overlay.active img {
+    transform: scale(1);
+  }
+
+  .lightbox-close {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-dim);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s, color 0.15s;
+  }
+
+  .lightbox-close:hover {
+    transform: scale(1.1);
+    color: var(--text);
+  }
+
+  /* ========== HEADER ========== */
+  .header { margin-bottom: 56px; }
+
+  .header h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+  }
+
+  .header h2 {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+
+  .header p {
+    color: var(--text-dim);
+    font-size: 15px;
+    font-weight: 300;
+    line-height: 1.6;
+  }
+
+  .header p a {
+    color: var(--blue);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(59,130,246,0.3);
+  }
+
+  /* ========== STATS ========== */
+  .stats {
+    display: flex;
+    gap: 1px;
+    background: var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 56px;
+    transition: background 0.25s;
+  }
+
+  .stat {
+    flex: 1;
+    background: var(--surface);
+    padding: 20px 24px;
+    text-align: center;
+    transition: background 0.25s;
+  }
+
+  .stat-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 28px;
+    font-weight: 600;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 4px;
+    letter-spacing: 0.5px;
+  }
+
+  /* ========== SECTION TITLE ========== */
+  .section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+    transition: border-color 0.25s;
+  }
+
+  /* ========== RECIPE CARD ========== */
+  .recipe-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    transition: border-color 0.2s, background 0.25s;
+  }
+
+  .recipe-card:hover { border-color: var(--border-hover); }
+
+  .card-photo-row {
+    display: flex;
+    align-items: stretch;
+  }
+
+  .card-photo {
+    width: 220px;
+    min-height: 180px;
+    flex-shrink: 0;
+    overflow: hidden;
+    position: relative;
+    cursor: zoom-in;
+  }
+
+  .card-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .card-photo:hover img { transform: scale(1.05); }
+
+  .card-photo-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--placeholder-from), var(--placeholder-to));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    cursor: default;
+  }
+
+  .card-header {
+    flex: 1;
+    padding: 24px 28px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .card-category {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-soft);
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    width: fit-content;
+  }
+
+  .card-category.streamer { color: var(--blue); background: var(--blue-soft); }
+
+  .card-name { font-size: 20px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.3px; }
+  .card-desc { font-size: 13px; color: var(--text-dim); font-weight: 300; line-height: 1.5; }
+
+  .card-meta { display: flex; gap: 16px; margin-top: 12px; }
+  .card-meta span { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); }
+
+  /* ========== CARD BODY ========== */
+  .card-body {
+    border-top: 1px solid var(--border);
+    padding: 24px 28px;
+    display: none;
+  }
+
+  .recipe-card.expanded .card-body { display: block; }
+
+  .card-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    border-top: 1px solid var(--border);
+    cursor: pointer;
+    color: var(--text-dim);
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    transition: background 0.15s, color 0.15s;
+    user-select: none;
+  }
+
+  .card-toggle:hover { background: var(--surface-hover); color: var(--text); }
+
+  .card-toggle .arrow { margin-left: 6px; transition: transform 0.2s; }
+  .recipe-card.expanded .card-toggle .arrow { transform: rotate(180deg); }
+
+  /* ========== MATERIALS ========== */
+  .materials { margin-bottom: 24px; }
+
+  .materials-title, .steps-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+  }
+
+  .material-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--row-line);
+    font-size: 14px;
+  }
+
+  .material-row:last-child { border-bottom: none; }
+  .material-part { color: var(--text-dim); font-weight: 400; font-size: 13px; min-width: 90px; }
+  .material-value { text-align: right; font-weight: 400; }
+
+  /* ========== STEPS ========== */
+  .steps { counter-reset: step; }
+
+  .step {
+    display: flex;
+    gap: 14px;
+    padding: 10px 0;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .step::before {
+    counter-increment: step;
+    content: counter(step);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    background: var(--accent-soft);
+    width: 24px; height: 24px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* ========== MEMO ========== */
+  .memo {
+    margin-top: 20px;
+    padding: 14px 18px;
+    background: var(--memo-bg);
+    border-left: 2px solid var(--border);
+    border-radius: 0 8px 8px 0;
+    font-size: 13px;
+    color: var(--text-dim);
+    font-style: italic;
+    line-height: 1.6;
+  }
+
+  /* ========== FILE TREE ========== */
+  .template-section { margin-top: 56px; }
+
+  .file-tree {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 2;
+    color: var(--text-dim);
+    margin-top: 16px;
+    transition: background 0.25s, border-color 0.25s;
+  }
+
+  .file-tree .folder { color: var(--blue); }
+  .file-tree .file { color: var(--text); }
+  .file-tree .indent { margin-left: 20px; }
+  .file-tree .indent2 { margin-left: 40px; }
+
+  /* ========== EMPTY CARD ========== */
+  .empty-card {
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: 14px;
+    padding: 40px;
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 14px;
+    margin-bottom: 20px;
+    transition: background 0.25s, border-color 0.25s;
+  }
+
+  .empty-card code {
+    background: var(--code-bg);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+
+  /* ========== RESPONSIVE ========== */
+  @media (max-width: 640px) {
+    .card-photo-row { flex-direction: column; }
+    .card-photo { width: 100%; min-height: 200px; }
+    .stats { flex-direction: column; }
+    .container { padding: 40px 16px; }
+    .theme-toggle { top: 12px; right: 12px; width: 42px; height: 42px; font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Theme Toggle -->
+<button class="theme-toggle" id="themeBtn" onclick="toggleTheme()" aria-label="테마 전환">🌙</button>
+
+<!-- Lightbox -->
+<div class="lightbox-overlay" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightboxImg" src="" alt="확대 보기">
+</div>
+
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>🪝 fly recipe cards</h1>
+    <h2>타잉 레시피 카드</h2>
+    <p>재료와 순서만 간결하게. 전략·분석은 <a href="#">Fly Tying Archive</a>에서.</p>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-number">1</div>
+      <div class="stat-label">Cards</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">1</div>
+      <div class="stat-label">Categories</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">2026</div>
+      <div class="stat-label">Season</div>
+    </div>
+  </div>
+
+  <!-- Chironomid Section -->
+  <div class="section-title">chironomid</div>
+
+  <!-- Recipe Card -->
+  <div class="recipe-card expanded">
+    <div class="card-photo-row">
+      <div class="card-photo" onclick="openLightbox('photos/red-wire-chironomid.jpg'); event.stopPropagation();">
+        <img src="photos/red-wire-chironomid.jpg" alt="Red Wire Chironomid">
+      </div>
+      <div class="card-header">
+        <div class="card-category">chironomid</div>
+        <div class="card-name">Red Wire Chironomid</div>
+        <div class="card-desc">블랙 바디 + 레드 와이어 리빙. 화이트 브리더 윙.</div>
+        <div class="card-meta">
+          <span>#14</span>
+          <span>2025-02-06</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <div class="materials">
+        <div class="materials-title">재료 materials</div>
+        <div class="material-row">
+          <span class="material-part">Hook</span>
+          <span class="material-value">커브드 님프 훅 #14</span>
+        </div>
+        <div class="material-row">
+          <span class="material-part">Bead</span>
+          <span class="material-value">글래스 비드 (클리어/스모크)</span>
+        </div>
+        <div class="material-row">
+          <span class="material-part">Thread</span>
+          <span class="material-value">Black 8/0</span>
+        </div>
+        <div class="material-row">
+          <span class="material-part">Body</span>
+          <span class="material-value">Thread 빌드업 + UV Resin 코팅</span>
+        </div>
+        <div class="material-row">
+          <span class="material-part">Ribbing</span>
+          <span class="material-value">Red Wire (fine)</span>
+        </div>
+        <div class="material-row">
+          <span class="material-part">Wing</span>
+          <span class="material-value">White Antron yarn (짧게 커팅)</span>
+        </div>
+        <div class="material-row">
+          <span class="material-part">Finish</span>
+          <span class="material-value">UV Resin thin coat</span>
+        </div>
+      </div>
+
+      <div class="steps">
+        <div class="steps-title">타잉 순서 steps</div>
+        <div class="step">비드 넣고 훅 고정 → 쓰레드 감아 베이스 형성</div>
+        <div class="step">화이트 Antron 소량 타이인 → 브리더 윙 만들기</div>
+        <div class="step">쓰레드로 바디 쉐이핑 (벤드 쪽 가늘게 → 헤드 쪽 두껍게)</div>
+        <div class="step">레드 와이어 벤드부터 균일 간격으로 리빙</div>
+        <div class="step">UV Resin 얇게 코팅 → 경화</div>
+      </div>
+
+      <div class="memo">
+        리빙 간격이 바디 볼륨감을 좌우함. 와이어 장력 일정하게 유지할 것.
+      </div>
+    </div>
+
+    <div class="card-toggle" onclick="this.closest('.recipe-card').classList.toggle('expanded')">
+      레시피 보기 <span class="arrow">▼</span>
+    </div>
+  </div>
+
+  <!-- Streamer Section -->
+  <div class="section-title" style="margin-top: 40px;">streamer</div>
+  <div class="empty-card">
+    <code>TEMPLATE.md</code> 복사 → <code>patterns/streamer/</code> 에 저장
+  </div>
+
+  <!-- File Structure -->
+  <div class="template-section">
+    <div class="section-title">저장소 구조</div>
+    <div class="file-tree">
+      <div><span class="folder">fly-recipe-cards/</span></div>
+      <div class="indent"><span class="file">README.md</span></div>
+      <div class="indent"><span class="file">TEMPLATE.md</span></div>
+      <div class="indent"><span class="folder">patterns/</span></div>
+      <div class="indent2"><span class="folder">chironomid/</span></div>
+      <div class="indent2" style="margin-left:60px"><span class="file">red-wire-chironomid.md</span></div>
+      <div class="indent2"><span class="folder">streamer/</span></div>
+      <div class="indent2"><span class="folder">nymph/</span></div>
+      <div class="indent2"><span class="folder">dry-fly/</span></div>
+      <div class="indent"><span class="folder">photos/</span></div>
+      <div class="indent2"><span class="file">red-wire-chironomid.jpg</span></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ===== THEME =====
+  function toggleTheme() {
+    const html = document.documentElement;
+    const btn = document.getElementById('themeBtn');
+    const isDark = html.getAttribute('data-theme') === 'dark';
+    html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    btn.textContent = isDark ? '☀️' : '🌙';
+  }
+
+  // ===== LIGHTBOX =====
+  function openLightbox(src) {
+    const lb = document.getElementById('lightbox');
+    const img = document.getElementById('lightboxImg');
+    img.src = src;
+    requestAnimationFrame(() => {
+      lb.classList.add('active');
+    });
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeLightbox();
+  });
+</script>
+</body>
+</html>
