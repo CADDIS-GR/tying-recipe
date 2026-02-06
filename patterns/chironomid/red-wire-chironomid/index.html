@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Red Wire Chironomid — Tying Recipe</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Sans+KR:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  [data-theme="dark"] {
+    --bg: #0a0a0b;
+    --surface: #141416;
+    --surface-hover: #1c1c20;
+    --border: #2a2a2e;
+    --border-hover: #3a3a40;
+    --text: #e4e4e7;
+    --text-dim: #71717a;
+    --accent: #ef4444;
+    --accent-soft: rgba(239,68,68,0.12);
+    --blue: #3b82f6;
+    --blue-soft: rgba(59,130,246,0.12);
+    --row-line: rgba(255,255,255,0.04);
+    --memo-bg: rgba(255,255,255,0.02);
+    --lightbox-bg: rgba(0,0,0,0.88);
+  }
+  [data-theme="light"] {
+    --bg: #f4f4f2;
+    --surface: #ffffff;
+    --surface-hover: #f9f9f7;
+    --border: #ddddd9;
+    --border-hover: #c5c5c0;
+    --text: #1c1c1e;
+    --text-dim: #6e6e80;
+    --accent: #dc2626;
+    --accent-soft: rgba(220,38,38,0.07);
+    --blue: #2563eb;
+    --blue-soft: rgba(37,99,235,0.07);
+    --row-line: rgba(0,0,0,0.05);
+    --memo-bg: rgba(0,0,0,0.02);
+    --lightbox-bg: rgba(255,255,255,0.92);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg); color: var(--text);
+    min-height: 100vh; -webkit-font-smoothing: antialiased;
+    transition: background 0.35s, color 0.25s;
+  }
+
+  .container { max-width: 720px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  /* Theme Toggle */
+  .theme-toggle {
+    position: fixed; top: 20px; right: 20px; z-index: 100;
+    width: 48px; height: 48px; border-radius: 50%;
+    border: 1px solid var(--border); background: var(--surface);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-size: 20px; transition: all 0.2s;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+  }
+  .theme-toggle:hover { border-color: var(--border-hover); transform: scale(1.08); }
+
+  /* Back link */
+  .back-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; color: var(--text-dim); text-decoration: none;
+    margin-bottom: 32px; transition: color 0.15s;
+  }
+  .back-link:hover { color: var(--text); }
+  .back-link svg { width: 14px; height: 14px; }
+
+  /* Hero */
+  .hero {
+    border-radius: 14px; overflow: hidden;
+    margin-bottom: 32px; cursor: zoom-in;
+    border: 1px solid var(--border);
+  }
+  .hero img {
+    width: 100%; height: 360px; object-fit: cover; display: block;
+    transition: transform 0.3s;
+  }
+  .hero:hover img { transform: scale(1.03); }
+
+  /* Lightbox */
+  .lightbox-overlay {
+    position: fixed; inset: 0; z-index: 500;
+    background: var(--lightbox-bg);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s; cursor: zoom-out;
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  }
+  .lightbox-overlay.active { opacity: 1; pointer-events: all; }
+  .lightbox-overlay img {
+    max-width: 92vw; max-height: 90vh; border-radius: 8px;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.35);
+    transform: scale(0.88); transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
+    object-fit: contain;
+  }
+  .lightbox-overlay.active img { transform: scale(1); }
+  .lightbox-close {
+    position: absolute; top: 20px; right: 24px;
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--text-dim); font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.15s, color 0.15s;
+  }
+  .lightbox-close:hover { transform: scale(1.1); color: var(--text); }
+
+  /* Title area */
+  .recipe-category {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--accent); background: var(--accent-soft);
+    display: inline-block; padding: 3px 8px; border-radius: 4px;
+    margin-bottom: 12px;
+  }
+  .recipe-title { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 6px; }
+  .recipe-desc { font-size: 15px; color: var(--text-dim); font-weight: 300; line-height: 1.5; margin-bottom: 12px; }
+  .recipe-meta {
+    display: flex; gap: 16px;
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-dim);
+    margin-bottom: 36px;
+    padding-bottom: 24px; border-bottom: 1px solid var(--border);
+  }
+
+  /* Section label */
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 16px;
+  }
+
+  /* Materials */
+  .materials-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 24px; margin-bottom: 32px;
+    transition: background 0.25s, border-color 0.25s;
+  }
+  .material-row {
+    display: flex; justify-content: space-between;
+    padding: 10px 0; border-bottom: 1px solid var(--row-line); font-size: 14px;
+  }
+  .material-row:last-child { border-bottom: none; }
+  .material-part { color: var(--text-dim); font-size: 13px; min-width: 90px; }
+  .material-value { text-align: right; font-weight: 400; }
+
+  /* Steps */
+  .steps-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 24px; margin-bottom: 32px;
+    transition: background 0.25s, border-color 0.25s;
+  }
+  .steps { counter-reset: step; }
+  .step {
+    display: flex; gap: 14px; padding: 12px 0; font-size: 14px; line-height: 1.6;
+    border-bottom: 1px solid var(--row-line);
+  }
+  .step:last-child { border-bottom: none; }
+  .step::before {
+    counter-increment: step; content: counter(step);
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    color: var(--accent); background: var(--accent-soft);
+    width: 28px; height: 28px; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+
+  /* Memo */
+  .memo {
+    padding: 16px 20px;
+    background: var(--memo-bg); border-left: 2px solid var(--border);
+    border-radius: 0 10px 10px 0;
+    font-size: 13px; color: var(--text-dim); font-style: italic; line-height: 1.6;
+    margin-bottom: 32px;
+  }
+
+  /* Footer */
+  .footer {
+    margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border);
+    text-align: center; color: var(--text-dim); font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .footer a { color: var(--blue); text-decoration: none; }
+
+  @media (max-width: 640px) {
+    .container { padding: 32px 16px 60px; }
+    .hero img { height: 260px; }
+    .recipe-title { font-size: 24px; }
+    .theme-toggle { top: 12px; right: 12px; width: 42px; height: 42px; font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙</button>
+
+<!-- Lightbox -->
+<div class="lightbox-overlay" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightboxImg" src="" alt="확대 보기">
+</div>
+
+<div class="container">
+
+  <!-- Back -->
+  <a href="../../../" class="back-link">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    목록으로
+  </a>
+
+  <!-- Hero Photo -->
+  <div class="hero" onclick="openLightbox('../../../photos/red-wire-chironomid.jpg')">
+    <img src="../../../photos/red-wire-chironomid.jpg" alt="Red Wire Chironomid">
+  </div>
+
+  <!-- Title -->
+  <div class="recipe-category">chironomid</div>
+  <h1 class="recipe-title">Red Wire Chironomid</h1>
+  <p class="recipe-desc">블랙 바디 + 레드 와이어 리빙의 클래식 커로노미드. 화이트 브리더 윙.</p>
+  <div class="recipe-meta">
+    <span>#14</span>
+    <span>2026-02-06</span>
+  </div>
+
+  <!-- Materials -->
+  <div class="section-label">재료 materials</div>
+  <div class="materials-card">
+    <div class="material-row">
+      <span class="material-part">Hook</span>
+      <span class="material-value">커브드 님프 훅 #14</span>
+    </div>
+    <div class="material-row">
+      <span class="material-part">Bead</span>
+      <span class="material-value">글래스 비드 (클리어/스모크)</span>
+    </div>
+    <div class="material-row">
+      <span class="material-part">Thread</span>
+      <span class="material-value">Black 8/0</span>
+    </div>
+    <div class="material-row">
+      <span class="material-part">Body</span>
+      <span class="material-value">Thread 빌드업 + UV Resin 코팅</span>
+    </div>
+    <div class="material-row">
+      <span class="material-part">Ribbing</span>
+      <span class="material-value">Red Wire (fine)</span>
+    </div>
+    <div class="material-row">
+      <span class="material-part">Wing</span>
+      <span class="material-value">White Antron yarn (짧게 커팅)</span>
+    </div>
+    <div class="material-row">
+      <span class="material-part">Finish</span>
+      <span class="material-value">UV Resin thin coat</span>
+    </div>
+  </div>
+
+  <!-- Steps -->
+  <div class="section-label">타잉 순서 steps</div>
+  <div class="steps-card">
+    <div class="steps">
+      <div class="step">비드 넣고 훅 고정 → 쓰레드 감아 베이스 형성</div>
+      <div class="step">화이트 Antron 소량 타이인 → 브리더 윙 만들기</div>
+      <div class="step">쓰레드로 바디 쉐이핑 (벤드 쪽 가늘게 → 헤드 쪽 두껍게)</div>
+      <div class="step">레드 와이어 벤드부터 균일 간격으로 리빙</div>
+      <div class="step">UV Resin 얇게 코팅 → 경화</div>
+    </div>
+  </div>
+
+  <!-- Memo -->
+  <div class="section-label">메모 notes</div>
+  <div class="memo">
+    리빙 간격이 바디 볼륨감을 좌우함. 와이어 장력 일정하게 유지할 것.
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <a href="../../../">← 전체 목록</a> · CADDIS-GR / <a href="https://github.com/CADDIS-GR/tying-recipe">tying-recipe</a>
+  </div>
+
+</div>
+
+<script>
+function toggleTheme() {
+  const html = document.documentElement;
+  const btn = document.getElementById('themeBtn');
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  btn.textContent = isDark ? '☀️' : '🌙';
+}
+function openLightbox(src) {
+  const lb = document.getElementById('lightbox');
+  document.getElementById('lightboxImg').src = src;
+  requestAnimationFrame(() => lb.classList.add('active'));
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('active');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+</script>
+</body>
+</html>
