@@ -5,27 +5,29 @@
 > 전략·분석은 [Fly Tying Archive](https://github.com/CADDIS-GR/fly-tying-archive)에서.  
 > 여기는 **"뭘로 감았더라?"** 를 빠르게 찾기 위한 곳.
 
+🌐 **웹 뷰**: [caddis-gr.github.io/tying-recipe](https://caddis-gr.github.io/tying-recipe/)
+
 ---
 
 ## 📂 구조
 
 ```
-patterns/
-├── chironomid/
-│   └── red-wire-chironomid.md
-├── streamer/
-├── nymph/
-└── dry-fly/
-photos/
-└── red-wire-chironomid.jpg
+tying-recipe/
+├── index.html                                    ← 메인 갤러리
+├── photos/
+│   └── red-wire-chironomid.jpg
+└── patterns/
+    └── chironomid/
+        └── red-wire-chironomid/
+            └── index.html                        ← 개별 레시피 페이지
 ```
 
 ## 🗂️ 패턴 목록
 
 ### Chironomid
-| 패턴명 | 훅 사이즈 | 날짜 |
-|--------|----------|------|
-| [Red Wire Chironomid](patterns/chironomid/red-wire-chironomid.md) | #14 | 2026-02-06 |
+| 패턴명 | 훅 사이즈 | 날짜 | 페이지 |
+|--------|----------|------|--------|
+| Red Wire Chironomid | #14 | 2026-02-06 | [보기](patterns/chironomid/red-wire-chironomid/) |
 
 ### Streamer
 _아직 등록된 카드 없음_
@@ -40,10 +42,10 @@ _아직 등록된 카드 없음_
 
 ## ✍️ 새 카드 만들기
 
-1. `TEMPLATE.md` 복사
-2. `patterns/카테고리/패턴이름.md` 로 저장
-3. 사진은 `photos/` 에 넣고 마크다운에서 참조
-4. README 목록에 링크 추가
+1. `patterns/카테고리/패턴이름/index.html` 생성
+2. 사진은 `photos/` 에 업로드
+3. 메인 `index.html` 갤러리에 카드 링크 추가
+4. 이 README 목록에도 추가
 
 ## 📸 사진 팁
 
