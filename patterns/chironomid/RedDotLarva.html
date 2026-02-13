@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Red Bubble Dot Larva - Interactive Workbench</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; }
+        h1, h2, h3 { font-family: 'Playfair Display', serif; }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #881337;
+            cursor: pointer;
+            margin-top: -8px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.3);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #e5e7eb;
+            border-radius: 2px;
+        }
+        /* ── Shared zoomable image frame ── */
+        .img-frame {
+            position: relative;
+            overflow: hidden;
+            cursor: zoom-in;
+            background: #0c0a09;
+        }
+        .img-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .img-frame:hover img {
+            transform: scale(1.08);
+        }
+        /* hover magnify icon overlay */
+        .img-frame::after {
+            content: '🔍';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.6);
+            font-size: 2.2rem;
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            pointer-events: none;
+            filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6));
+        }
+        .img-frame:hover::after {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        /* ── Lightbox overlay ── */
+        #lightbox {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background: rgba(10,8,7,0.92);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            align-items: center;
+            justify-content: center;
+            cursor: zoom-out;
+        }
+        #lightbox.active {
+            display: flex;
+        }
+        #lightbox-img {
+            max-width: 90vw;
+            max-height: 88vh;
+            object-fit: contain;
+            border-radius: 0.75rem;
+            box-shadow: 0 32px 80px rgba(0,0,0,0.7);
+            animation: lbIn 0.28s cubic-bezier(0.34,1.56,0.64,1) both;
+        }
+        @keyframes lbIn {
+            from { opacity: 0; transform: scale(0.82); }
+            to   { opacity: 1; transform: scale(1); }
+        }
+        #lightbox-caption {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255,255,255,0.7);
+            font-size: 0.78rem;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+        }
+        #lightbox-close {
+            position: absolute;
+            top: 1.25rem;
+            right: 1.5rem;
+            color: rgba(255,255,255,0.6);
+            font-size: 1.8rem;
+            line-height: 1;
+            cursor: pointer;
+            transition: color 0.2s;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+        #lightbox-close:hover { color: #fff; }
+
+        /* UV Paint reference gallery */
+        .uv-photo-frame {
+            border-radius: 0.875rem;
+            overflow: hidden;
+            aspect-ratio: 4/3;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+            border: 1px solid #e7e5e4;
+        }
+        .uv-photo-caption {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.80) 0%, transparent 100%);
+            padding: 1.25rem 1rem 0.6rem;
+            color: white;
+            font-size: 0.72rem;
+            letter-spacing: 0.04em;
+            pointer-events: none;
+        }
+        .uv-glow-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(220,38,38,0.15);
+            border: 1px solid rgba(220,38,38,0.35);
+            color: #fca5a5;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 3px 10px;
+            border-radius: 999px;
+        }
+
+        /* Fly photo (hero) */
+        .fly-photo-container {
+            position: relative;
+            background: #1c1917;
+            border-radius: 1rem;
+            overflow: hidden;
+            height: 100%;
+            min-height: 280px;
+        }
+        .fly-photo-label {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%);
+            padding: 1.5rem 1rem 0.75rem;
+            color: white;
+            font-size: 0.75rem;
+            font-family: 'Noto Sans KR', sans-serif;
+            letter-spacing: 0.05em;
+            pointer-events: none;
+        }
+        .fly-photo-badge {
+            position: absolute;
+            top: 12px; right: 12px;
+            background: rgba(220,38,38,0.85);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 4px 10px;
+            border-radius: 999px;
+            backdrop-filter: blur(4px);
+            pointer-events: none;
+            z-index: 2;
+        }
+    </style>
+</head>
+<body class="bg-[#f5f5f4] text-stone-800 antialiased selection:bg-rose-200 selection:text-rose-900">
+
+    <!-- Navigation / Header -->
+    <header class="bg-white shadow-sm border-b border-stone-200 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-red-600 to-rose-900 shadow-inner border border-stone-300"></div>
+                <h1 class="text-xl font-bold text-stone-900 tracking-tight">Red Bubble Dot Larva <span class="text-sm font-normal text-stone-500 ml-2">Digital Workbench</span></h1>
+            </div>
+            <nav class="hidden md:flex space-x-6 text-sm font-medium text-stone-600">
+                <button onclick="scrollToSection('concept')" class="hover:text-rose-700 transition-colors">컨셉</button>
+                <button onclick="scrollToSection('materials')" class="hover:text-rose-700 transition-colors">재료</button>
+                <button onclick="scrollToSection('process')" class="hover:text-rose-700 transition-colors">타잉 순서</button>
+                <button onclick="scrollToSection('analysis')" class="hover:text-rose-700 transition-colors">핵심 분석</button>
+                <button onclick="scrollToSection('uvpaint')" class="hover:text-rose-700 transition-colors flex items-center gap-1">
+                    <span class="w-2 h-2 bg-red-500 rounded-full inline-block"></span>UV Paint
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Wrapper -->
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-16">
+
+        <!-- Section 1: Introduction & Core Concept -->
+        <section id="concept" class="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+            <div class="space-y-6">
+                <div class="inline-block px-3 py-1 bg-rose-100 text-rose-800 text-xs font-bold uppercase tracking-wider rounded-full">Nymph / Larva Pattern</div>
+                <h2 class="text-4xl sm:text-5xl font-bold text-stone-900 leading-tight">
+                    그라데이션의 미학,<br>
+                    <span class="text-rose-700">Red Bubble Dot</span>
+                </h2>
+                <p class="text-lg text-stone-600 leading-relaxed">
+                    이 패턴은 단순한 레드웜이 아닙니다. <strong>Red(언더)</strong>와 <strong>Wine(오버)</strong> 스레드의 교차로 만들어내는 깊이 있는 입체감, 
+                    그리고 헤드 부분의 <strong>UV Red Dot</strong>이 만들어내는 강력한 시각적 자극이 핵심입니다.
+                </p>
+                <div class="bg-white p-5 rounded-xl border-l-4 border-rose-600 shadow-sm">
+                    <p class="font-medium text-stone-800 mb-1">💡 핵심 포인트</p>
+                    <p class="text-stone-600">색이 짙어지는 그라데이션 바디 + 화룡점정 레드 도트</p>
+                </div>
+            </div>
+
+            <!-- Real Fly Photo -->
+            <div class="fly-photo-container shadow-xl border border-stone-200" style="height: 320px;">
+                <div class="img-frame w-full h-full" onclick="openLightbox(this.querySelector('img'))">
+                    <img
+                        src="https://raw.githubusercontent.com/CADDIS-GR/tying-recipe/main/photos/RedDotLarva.jpg"
+                        alt="Red Bubble Dot Larva - actual fly photo"
+                        onerror="this.closest('.fly-photo-container').innerHTML='<div class=\'flex flex-col items-center justify-center h-full text-stone-500 px-6 text-center\'><span class=\'text-4xl mb-3\'>📷</span><p class=\'text-sm\'>이미지를 불러올 수 없습니다.</p></div>'"
+                    />
+                </div>
+                <div class="fly-photo-badge">실물 사진</div>
+                <div class="fly-photo-label">
+                    <span class="font-semibold">Red Bubble Dot Larva</span>
+                    <span class="text-stone-300 ml-2">DAIICHI 1760 #14 · Black Nikel Bead 2.4mm</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Materials Checklist -->
+        <section id="materials" class="bg-stone-50 rounded-3xl p-8 sm:p-10 border border-stone-200">
+            <div class="mb-8">
+                <h3 class="text-2xl font-bold text-stone-900 mb-2">준비물 체크리스트</h3>
+                <p class="text-stone-500">타잉을 시작하기 전에 필요한 재료를 확인하고 클릭하여 준비 상태를 표시하세요.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="materials-grid">
+            </div>
+        </section>
+
+        <!-- Section 3: Interactive Tying Process -->
+        <section id="process">
+            <div class="text-center max-w-2xl mx-auto mb-10">
+                <h3 class="text-3xl font-bold text-stone-900 mb-4">Step-by-Step 가이드</h3>
+                <p class="text-stone-600">
+                    완벽한 Red Bubble Dot Larva를 완성하기 위한 4단계 과정을 따라오세요. 
+                    각 단계의 핵심을 놓치지 않는 것이 중요합니다.
+                </p>
+            </div>
+
+            <div class="bg-white rounded-3xl shadow-xl border border-stone-100 overflow-hidden flex flex-col md:flex-row min-h-[500px]">
+                
+                <div class="w-full md:w-1/3 bg-stone-50 border-r border-stone-100 flex flex-col p-2">
+                    <div id="step-tabs" class="space-y-2"></div>
+                </div>
+
+                <div class="w-full md:w-2/3 p-8 sm:p-10 relative flex flex-col justify-between">
+                    <div id="step-content" class="transition-opacity duration-300">
+                        <div class="flex items-center space-x-3 mb-6">
+                            <span id="step-number" class="text-5xl font-black text-rose-100">01</span>
+                            <h4 id="step-title" class="text-2xl font-bold text-stone-800">베이스 및 테이퍼 형성</h4>
+                        </div>
+                        
+                        <div class="prose prose-stone max-w-none mb-8">
+                            <p id="step-desc" class="text-lg text-stone-600 leading-relaxed">
+                                설명이 여기에 표시됩니다.
+                            </p>
+                        </div>
+
+                        <div id="step-tip-box" class="bg-rose-50 rounded-xl p-5 border border-rose-100 hidden">
+                            <div class="flex items-start space-x-3">
+                                <span class="text-xl">💡</span>
+                                <div>
+                                    <h5 class="font-bold text-rose-900 text-sm uppercase mb-1">Tip</h5>
+                                    <p id="step-tip-text" class="text-sm text-rose-800"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between mt-10 pt-6 border-t border-stone-100">
+                        <button id="btn-prev" class="px-6 py-2 rounded-lg text-stone-500 hover:bg-stone-100 hover:text-stone-800 font-medium transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                            ← 이전
+                        </button>
+                        <button id="btn-next" class="px-6 py-2 rounded-lg bg-stone-900 text-white hover:bg-rose-700 font-medium shadow-md transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                            다음 →
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Analytical Deep Dive -->
+        <section id="analysis" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            <div class="bg-white rounded-3xl p-8 border border-stone-200 shadow-sm">
+                <div class="mb-6">
+                    <h3 class="text-xl font-bold text-stone-900">시각적 요소 분석</h3>
+                    <p class="text-sm text-stone-500 mt-1">이 패턴이 물고기를 유혹하는 시각적 비중을 분석했습니다.</p>
+                </div>
+                
+                <div class="bg-stone-50 rounded-2xl p-4 flex flex-col items-center justify-center">
+                    <div class="chart-container">
+                        <canvas id="compositionChart"></canvas>
+                    </div>
+                    <p class="text-xs text-stone-400 mt-4 text-center">
+                        바디(Body)는 전체 실루엣을, 포인트(Point)는 공격 본능을 자극합니다.
+                    </p>
+                </div>
+            </div>
+
+            <div class="bg-stone-900 text-white rounded-3xl p-8 border border-stone-800 shadow-lg relative overflow-hidden">
+                <div class="absolute -top-20 -right-20 w-64 h-64 bg-rose-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+
+                <div class="relative z-10">
+                    <div class="mb-6">
+                        <h3 class="text-xl font-bold text-white">그라데이션 시뮬레이터</h3>
+                        <p class="text-sm text-stone-400 mt-1">
+                            "Red 위에 Wine을 덧감는다"는 의미를 시각적으로 확인해보세요.<br>
+                            슬라이더를 움직여 오버 코팅(Wine)의 밀도를 조절합니다.
+                        </p>
+                    </div>
+
+                    <div class="w-full h-32 rounded-xl mb-6 relative border-2 border-stone-700 overflow-hidden shadow-inner">
+                        <div class="absolute inset-0 bg-red-600 flex items-center justify-center">
+                            <span class="text-red-200 font-bold opacity-50">RED BASE (Under)</span>
+                        </div>
+                        <div id="overlay-layer" class="absolute inset-0 bg-[#4a0404] flex items-center justify-center transition-opacity duration-75" style="opacity: 0.5;">
+                            <span id="overlay-text" class="text-white font-bold opacity-0">WINE OVERCOAT</span>
+                        </div>
+                        <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEwIDAgTDAgMTAiIHN0cm9rZT0iI0ZDQTIwNSIgc3Ryb2tlLXdpZHRoPSIxIiBmaWxsPSJub25lIiBvcGFjaXR5PSIwLjUiLz48L3N2Zz4=')] opacity-30 mix-blend-overlay"></div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="flex justify-between text-sm font-medium">
+                            <span class="text-red-400">Pure Red</span>
+                            <span class="text-rose-200">Perfect Mix</span>
+                            <span class="text-stone-400">Pure Wine</span>
+                        </div>
+                        <input type="range" id="opacity-slider" min="0" max="100" value="50" class="w-full h-2 bg-stone-700 rounded-lg appearance-none cursor-pointer">
+                        <div class="text-center">
+                            <span id="opacity-value" class="text-2xl font-bold text-rose-500">50%</span>
+                            <span class="text-stone-500 text-sm ml-2">Overcoat Density</span>
+                        </div>
+                        <div class="bg-stone-800 p-3 rounded-lg mt-2 text-sm text-stone-300">
+                            <p id="simulation-feedback">균형 잡힌 그라데이션입니다. 붉은 빛이 은은하게 비칩니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Jeff's Advice -->
+        <section class="bg-gradient-to-br from-rose-50 to-white rounded-3xl p-8 border border-rose-100 text-center">
+            <h3 class="text-xl font-bold text-rose-900 mb-4 font-serif italic">Jeff's Advice</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                <div class="p-4 bg-white rounded-xl shadow-sm">
+                    <h4 class="font-bold text-stone-800 mb-2">🎨 색상의 깊이</h4>
+                    <p class="text-sm text-stone-600">단순히 와인색 실만 쓰지 마세요. 밝은 레드를 안에 감고 그 위에 와인색을 올려야 물속에서 생동감 있는 '피 색깔'이 나옵니다.</p>
+                </div>
+                <div class="p-4 bg-white rounded-xl shadow-sm">
+                    <h4 class="font-bold text-stone-800 mb-2">🎯 도트의 위치</h4>
+                    <p class="text-sm text-stone-600">UV Red Dot은 너무 크지 않게! 비드와 바디의 경계면에 정확히 위치시켜야 시각적 균형과 유인 효과가 극대화됩니다.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 6: UV Paint Reference -->
+        <section id="uvpaint" class="bg-white rounded-3xl p-8 sm:p-10 border border-stone-200 shadow-sm">
+            <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-8">
+                <div>
+                    <span class="uv-glow-badge mb-3 inline-flex">
+                        <span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                        재료 참조
+                    </span>
+                    <h3 class="text-2xl font-bold text-stone-900">UV Paint — Red Dot 재료 가이드</h3>
+                    <p class="text-stone-500 text-sm mt-1">화룡점정 포인트를 만드는 UV 페인트 실물 참조 이미지</p>
+                </div>
+                <div class="text-sm text-stone-400 italic">The Kick · 핵심 재료</div>
+            </div>
+
+            <!-- Two-column photo grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+
+                <!-- Photo 01 -->
+                <div class="space-y-3">
+                    <div class="uv-photo-frame relative">
+                        <div class="img-frame w-full h-full" style="aspect-ratio:4/3;" onclick="openLightbox(this.querySelector('img'), 'UV Paint — 전체 제품 · Red Dot 도포용')">
+                            <img
+                                src="https://raw.githubusercontent.com/CADDIS-GR/tying-recipe/main/photos/UvPaint-01.jpg"
+                                alt="UV Paint 참조 이미지 01"
+                                onerror="this.closest('.uv-photo-frame').innerHTML='<div class=\'flex items-center justify-center h-48 text-stone-500 text-sm bg-stone-100 rounded-xl\'>이미지 로드 실패</div>'"
+                            />
+                        </div>
+                        <div class="uv-photo-caption">
+                            <span class="font-semibold">UV Paint — 전체 제품</span>
+                            <span class="text-stone-400 ml-2">Red Dot 도포용</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-stone-500 px-1">제품 전체 모습. 뚜껑의 브러시로 소량을 정확하게 찍어 사용합니다.</p>
+                </div>
+
+                <!-- Photo 02 -->
+                <div class="space-y-3">
+                    <div class="uv-photo-frame relative">
+                        <div class="img-frame w-full h-full" style="aspect-ratio:4/3;" onclick="openLightbox(this.querySelector('img'), 'UV Paint — 도포 클로즈업 · 비드 경계면 적용')">
+                            <img
+                                src="https://raw.githubusercontent.com/CADDIS-GR/tying-recipe/main/photos/UvPaint-02.jpg"
+                                alt="UV Paint 참조 이미지 02"
+                                onerror="this.closest('.uv-photo-frame').innerHTML='<div class=\'flex items-center justify-center h-48 text-stone-500 text-sm bg-stone-100 rounded-xl\'>이미지 로드 실패</div>'"
+                            />
+                        </div>
+                        <div class="uv-photo-caption">
+                            <span class="font-semibold">UV Paint — 도포 클로즈업</span>
+                            <span class="text-stone-400 ml-2">비드 경계면 적용</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-stone-500 px-1">비드 바로 뒤 경계면에 한 방울. 크기를 작게 유지하는 것이 핵심입니다.</p>
+                </div>
+            </div>
+
+            <!-- Usage tips -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 border-t border-stone-100">
+                <div class="bg-stone-50 rounded-xl p-4">
+                    <p class="text-xs font-bold text-rose-700 uppercase tracking-wider mb-2">📍 도포 위치</p>
+                    <p class="text-sm text-stone-600">비드(헤드)와 바디의 경계면. 비드 바로 뒤쪽에 정확히 위치.</p>
+                </div>
+                <div class="bg-stone-50 rounded-xl p-4">
+                    <p class="text-xs font-bold text-rose-700 uppercase tracking-wider mb-2">📏 도트 크기</p>
+                    <p class="text-sm text-stone-600">비드 직경의 1/3 이하. 작을수록 균형이 좋고 유인 효과가 높습니다.</p>
+                </div>
+                <div class="bg-stone-50 rounded-xl p-4">
+                    <p class="text-xs font-bold text-rose-700 uppercase tracking-wider mb-2">💡 경화 방법</p>
+                    <p class="text-sm text-stone-600">UV 라이트로 10~15초 경화 후 Varnish로 최종 마감하여 내구성 확보.</p>
+                </div>
+            </div>
+        </section>
+
+        <footer class="text-center text-stone-400 text-sm py-10">
+            <p>© 2024 Red Bubble Dot Larva Interactive Guide</p>
+            <p class="mt-2">Based on the provided Tying Recipe</p>
+        </footer>
+
+    </main>
+
+    <!-- ── Lightbox ── -->
+    <div id="lightbox" onclick="closeLightbox()">
+        <button id="lightbox-close" onclick="closeLightbox()" aria-label="닫기">✕</button>
+        <img id="lightbox-img" src="" alt="" onclick="event.stopPropagation()" />
+        <span id="lightbox-caption"></span>
+    </div>
+
+    <script>
+        /* ── Lightbox ── */
+        function openLightbox(imgEl, caption) {
+            const lb = document.getElementById('lightbox');
+            const lbImg = document.getElementById('lightbox-img');
+            const lbCap = document.getElementById('lightbox-caption');
+            lbImg.src = imgEl.src;
+            lbImg.alt = imgEl.alt;
+            lbCap.textContent = caption || imgEl.alt || '';
+            lb.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeLightbox();
+        });
+
+        const materials = [
+            { cat: "Hook", item: "DAIICHI 1760 #14", note: "커브드 훅 (Nymph/Larva용)", icon: "🪝" },
+            { cat: "Bead", item: "Black Nikel 2.4mm", note: "무게감 조절용 어두운 톤", icon: "⚫" },
+            { cat: "Wire", item: "Gold Wire (BR)", note: "체절 표현 및 내구성", icon: "➰" },
+            { cat: "Thread (Under)", item: "UTC 72D - Red", note: "하단 테이퍼 및 기본 색상", icon: "🧵" },
+            { cat: "Thread (Over)", item: "UTC 72D - Wine", note: "상단 그라데이션", icon: "🧶" },
+            { cat: "Finish", item: "Thin UV Resin & Vanish", note: "광택 및 보호", icon: "✨" },
+            { cat: "The Kick", item: "UV Paint (Red Dot)", note: "화룡점정 포인트", icon: "🔴" }
+        ];
+
+        const steps = [
+            {
+                id: 1,
+                title: "베이스 및 테이퍼 형성",
+                desc: "1. 훅에 <strong>Black Nikel 비드</strong>를 끼웁니다.<br>2. <strong>Red Thread</strong>를 사용하여 훅 생크를 감아 내려갑니다.<br>3. 꼬리 쪽은 얇고 헤드 쪽은 굵어지는 <strong>테이퍼(Taper) 구조</strong>를 만듭니다.<br>4. 꼬리 끝부분에 <strong>Gold Wire</strong>를 단단히 고정합니다.",
+                tip: "테이퍼를 만들 때 실을 너무 많이 겹치면 뚱뚱해집니다. 완만한 경사를 만드는 것이 핵심입니다.",
+                short: "Step 1: Base"
+            },
+            {
+                id: 2,
+                title: "그라데이션 오버 코팅",
+                desc: "1. <strong>Wine Thread</strong>로 교체하여 Red Thread 위에 덧감습니다.<br>2. 이때 Red 색상이 완전히 가려지지 않고 은은하게 비치도록 밀도를 조절합니다.<br>3. 꼬리에서 헤드 쪽으로 갈수록 색이 자연스럽게 짙어지는 <strong>그라데이션 효과</strong>를 연출하세요.",
+                tip: "아래의 Red 시뮬레이터를 사용하여 그라데이션의 원리를 이해해보세요.",
+                short: "Step 2: Gradation"
+            },
+            {
+                id: 3,
+                title: "와이어 리빙 (Ribbing)",
+                desc: "1. 고정해 두었던 <strong>Gold Wire</strong>를 잡습니다.<br>2. 일정한 간격(등간격)으로 헤드 쪽으로 감아 올라옵니다.<br>3. 곤충의 체절(Segment)을 표현하며 헤드 부분에서 실로 고정하고 마무리합니다.",
+                tip: "와이어를 감을 때는 텐션을 유지해야 풀리지 않습니다. 반대 방향으로 감으면(Reverse wrapping) 내구성이 더 좋아집니다.",
+                short: "Step 3: Ribbing"
+            },
+            {
+                id: 4,
+                title: "하이라이트 (Red Dot)",
+                desc: "1. 전체적으로 <strong>Thin UV Resin</strong>을 얇게 도포하여 바디를 보호합니다.<br>2. <strong>가장 중요한 단계:</strong> 헤드(비드) 바로 뒷부분에 <strong>UV Paint (Red Dot)</strong>를 한 방울 찍습니다.<br>3. UV 라이트로 경화시킨 후 <strong>Varnish</strong>로 최종 마감하여 유리알 같은 광택을 살립니다.",
+                tip: "Red Dot은 물고기가 무는 타겟 포인트입니다. 너무 크면 밸런스가 깨집니다.",
+                short: "Step 4: Highlight"
+            }
+        ];
+
+        let currentStepIndex = 0;
+        let checkedMaterials = new Set();
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderMaterials();
+            renderStepTabs();
+            updateStepContent();
+            initChart();
+            initSimulator();
+        });
+
+        function renderMaterials() {
+            const grid = document.getElementById('materials-grid');
+            grid.innerHTML = materials.map((m, index) => `
+                <div class="group bg-white p-4 rounded-xl border border-stone-100 shadow-sm hover:shadow-md transition-all cursor-pointer relative overflow-hidden" onclick="toggleMaterial(${index})">
+                    <div class="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div class="w-5 h-5 rounded-full border-2 border-stone-300 flex items-center justify-center check-circle" id="check-${index}">
+                            <div class="w-3 h-3 bg-rose-500 rounded-full hidden"></div>
+                        </div>
+                    </div>
+                    <div class="text-3xl mb-2">${m.icon}</div>
+                    <h4 class="font-bold text-stone-800 text-sm">${m.item}</h4>
+                    <p class="text-xs text-rose-600 font-medium mb-1">${m.cat}</p>
+                    <p class="text-xs text-stone-500">${m.note}</p>
+                    <div class="absolute inset-0 bg-rose-50 opacity-0 pointer-events-none transition-opacity" id="bg-check-${index}"></div>
+                </div>
+            `).join('');
+        }
+
+        function toggleMaterial(index) {
+            const checkCircle = document.querySelector(`#check-${index} div`);
+            const bg = document.querySelector(`#bg-check-${index}`);
+            if (checkedMaterials.has(index)) {
+                checkedMaterials.delete(index);
+                checkCircle.classList.add('hidden');
+                bg.classList.remove('opacity-20');
+            } else {
+                checkedMaterials.add(index);
+                checkCircle.classList.remove('hidden');
+                bg.classList.add('opacity-20');
+            }
+        }
+
+        function renderStepTabs() {
+            const container = document.getElementById('step-tabs');
+            container.innerHTML = steps.map((step, index) => `
+                <button onclick="goToStep(${index})" id="tab-${index}" class="w-full text-left px-5 py-4 rounded-xl transition-all flex items-center group outline-none focus:ring-2 focus:ring-rose-500 focus:ring-opacity-50">
+                    <span class="w-8 h-8 rounded-full bg-stone-200 text-stone-500 flex items-center justify-center font-bold text-sm mr-3 group-hover:bg-rose-100 group-hover:text-rose-700 transition-colors step-idx-badge">
+                        ${index + 1}
+                    </span>
+                    <div>
+                        <span class="block text-sm font-bold text-stone-700 group-hover:text-stone-900 tab-title">${step.short}</span>
+                    </div>
+                </button>
+            `).join('');
+        }
+
+        function goToStep(index) {
+            currentStepIndex = index;
+            updateStepContent();
+        }
+
+        function updateStepContent() {
+            const step = steps[currentStepIndex];
+            document.getElementById('step-number').textContent = `0${step.id}`;
+            document.getElementById('step-title').textContent = step.title;
+            document.getElementById('step-desc').innerHTML = step.desc;
+            
+            const tipBox = document.getElementById('step-tip-box');
+            if (step.tip) {
+                tipBox.classList.remove('hidden');
+                document.getElementById('step-tip-text').textContent = step.tip;
+            } else {
+                tipBox.classList.add('hidden');
+            }
+
+            steps.forEach((_, idx) => {
+                const tab = document.getElementById(`tab-${idx}`);
+                const badge = tab.querySelector('.step-idx-badge');
+                const title = tab.querySelector('.tab-title');
+                if (idx === currentStepIndex) {
+                    tab.classList.add('bg-white', 'shadow-md', 'border-l-4', 'border-rose-500');
+                    badge.classList.remove('bg-stone-200', 'text-stone-500');
+                    badge.classList.add('bg-rose-600', 'text-white');
+                    title.classList.add('text-rose-900');
+                } else {
+                    tab.classList.remove('bg-white', 'shadow-md', 'border-l-4', 'border-rose-500');
+                    badge.classList.add('bg-stone-200', 'text-stone-500');
+                    badge.classList.remove('bg-rose-600', 'text-white');
+                    title.classList.remove('text-rose-900');
+                }
+            });
+
+            document.getElementById('btn-prev').disabled = currentStepIndex === 0;
+            document.getElementById('btn-next').disabled = currentStepIndex === steps.length - 1;
+        }
+
+        document.getElementById('btn-prev').addEventListener('click', () => {
+            if (currentStepIndex > 0) goToStep(currentStepIndex - 1);
+        });
+        document.getElementById('btn-next').addEventListener('click', () => {
+            if (currentStepIndex < steps.length - 1) goToStep(currentStepIndex + 1);
+        });
+
+        function initChart() {
+            const ctx = document.getElementById('compositionChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Body Base (Red)', 'Overcoat Gradient (Wine)', 'Structure (Gold Wire)', 'Trigger Point (Red Dot)'],
+                    datasets: [{
+                        data: [35, 35, 15, 15],
+                        backgroundColor: ['#ef4444', '#881337', '#fbbf24', '#dc2626'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { font: { family: "'Noto Sans KR', sans-serif", size: 12 }, padding: 20 }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ` ${context.label}: ${context.raw}% Impact`;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+        }
+
+        function initSimulator() {
+            const slider = document.getElementById('opacity-slider');
+            const overlayText = document.getElementById('overlay-text');
+            const overlayLayer = document.getElementById('overlay-layer');
+            const opacityValue = document.getElementById('opacity-value');
+            const feedback = document.getElementById('simulation-feedback');
+
+            slider.addEventListener('input', (e) => {
+                const val = e.target.value;
+                const opacity = val / 100;
+                overlayLayer.style.opacity = opacity;
+                opacityValue.textContent = `${val}%`;
+
+                if (val < 20) {
+                    feedback.textContent = "너무 붉습니다. 그라데이션의 깊이감이 부족합니다.";
+                    feedback.className = "text-center text-sm text-red-400 font-medium";
+                    overlayText.style.opacity = 0;
+                } else if (val > 80) {
+                    feedback.textContent = "너무 어둡습니다. Red 베이스가 거의 보이지 않습니다.";
+                    feedback.className = "text-center text-sm text-stone-400 font-medium";
+                    overlayText.style.opacity = 1;
+                } else {
+                    feedback.textContent = "완벽합니다! Red가 은은하게 비치는 이상적인 그라데이션입니다.";
+                    feedback.className = "text-center text-sm text-rose-400 font-bold animate-pulse";
+                    overlayText.style.opacity = opacity;
+                }
+            });
+        }
+
+        window.scrollToSection = function(id) {
+            const element = document.getElementById(id);
+            if (element) element.scrollIntoView({ behavior: 'smooth' });
+        };
+    </script>
+</body>
+</html>
