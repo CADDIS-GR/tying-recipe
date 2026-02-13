@@ -1,237 +1,268 @@
 <!DOCTYPE html>
 <html lang="ko" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tying Recipe — 타잉 레시피 카드</title>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Sans+KR:wght@300;400;600;700&display=swap" rel="stylesheet">
-<style>
-  [data-theme="dark"] {
-    --bg: #0a0a0b;
-    --surface: #141416;
-    --surface-hover: #1c1c20;
-    --border: #2a2a2e;
-    --border-hover: #3a3a40;
-    --text: #e4e4e7;
-    --text-dim: #71717a;
-    --accent: #ef4444;
-    --accent-soft: rgba(239,68,68,0.12);
-    --blue: #3b82f6;
-    --blue-soft: rgba(59,130,246,0.12);
-  }
-  [data-theme="light"] {
-    --bg: #f4f4f2;
-    --surface: #ffffff;
-    --surface-hover: #f9f9f7;
-    --border: #ddddd9;
-    --border-hover: #c5c5c0;
-    --text: #1c1c1e;
-    --text-dim: #6e6e80;
-    --accent: #dc2626;
-    --accent-soft: rgba(220,38,38,0.07);
-    --blue: #2563eb;
-    --blue-soft: rgba(37,99,235,0.07);
-  }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tying Recipe — Premium Archive</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root [data-theme="dark"] {
+      --bg: #09090b;
+      --surface-1: #121215;
+      --surface-2: #1c1c21;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-strong: rgba(255, 255, 255, 0.15);
+      --text-main: #fafafa;
+      --text-dim: #a1a1aa;
+      --accent: #f43f5e;
+      --accent-glow: rgba(244, 63, 94, 0.2);
+      --blue: #3b82f6;
+      --card-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+    }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root [data-theme="light"] {
+      --bg: #f8f9fa;
+      --surface-1: #ffffff;
+      --surface-2: #f1f3f5;
+      --border: rgba(0, 0, 0, 0.06);
+      --border-strong: rgba(0, 0, 0, 0.12);
+      --text-main: #1a1a1e;
+      --text-dim: #6b7280;
+      --accent: #e11d48;
+      --accent-glow: rgba(225, 29, 72, 0.1);
+      --blue: #2563eb;
+      --card-shadow: 0 10px 25px -12px rgba(0,0,0,0.08);
+    }
 
-  body {
-    font-family: 'Noto Sans KR', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    -webkit-font-smoothing: antialiased;
-    transition: background 0.35s, color 0.25s;
-  }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
 
-  .container { max-width: 860px; margin: 0 auto; padding: 60px 24px 80px; }
+    body {
+      font-family: 'Inter', 'Noto Sans KR', sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      line-height: 1.5;
+      transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow-x: hidden;
+    }
 
-  /* Theme Toggle */
-  .theme-toggle {
-    position: fixed; top: 20px; right: 20px; z-index: 100;
-    width: 48px; height: 48px; border-radius: 50%;
-    border: 1px solid var(--border); background: var(--surface);
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-    font-size: 20px; transition: all 0.2s;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
-  }
-  .theme-toggle:hover { border-color: var(--border-hover); transform: scale(1.08); }
+    .container { max-width: 900px; margin: 0 auto; padding: 80px 24px; }
 
-  /* Header */
-  .header { margin-bottom: 48px; }
-  .header h1 {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px; font-weight: 600; letter-spacing: 2px;
-    text-transform: uppercase; color: var(--text-dim); margin-bottom: 12px;
-  }
-  .header h2 { font-size: 32px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px; }
-  .header p { color: var(--text-dim); font-size: 15px; font-weight: 300; line-height: 1.6; }
-  .header p a { color: var(--blue); text-decoration: none; border-bottom: 1px solid rgba(59,130,246,0.3); }
+    /* Theme Toggle Custom */
+    .theme-toggle {
+      position: fixed; top: 32px; right: 32px; z-index: 1000;
+      width: 44px; height: 44px; border-radius: 14px;
+      border: 1px solid var(--border); background: var(--surface-1);
+      color: var(--text-main); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      backdrop-filter: blur(8px);
+    }
+    .theme-toggle:hover { transform: scale(1.1); border-color: var(--border-strong); box-shadow: var(--card-shadow); }
 
-  /* Stats */
-  .stats {
-    display: flex; gap: 1px; background: var(--border);
-    border-radius: 10px; overflow: hidden; margin-bottom: 48px;
-  }
-  .stat { flex: 1; background: var(--surface); padding: 20px 24px; text-align: center; transition: background 0.25s; }
-  .stat-number { font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 600; }
-  .stat-label { font-size: 12px; color: var(--text-dim); margin-top: 4px; letter-spacing: 0.5px; }
+    /* Header Design */
+    .header { margin-bottom: 64px; position: relative; }
+    .header-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: 'JetBrains Mono', monospace; font-size: 11px;
+      color: var(--accent); background: var(--accent-glow);
+      padding: 4px 12px; border-radius: 100px; margin-bottom: 20px;
+      letter-spacing: 1px; text-transform: uppercase; font-weight: 600;
+    }
+    .header h2 { font-size: 42px; font-weight: 700; letter-spacing: -1px; margin-bottom: 16px; }
+    .header p { color: var(--text-dim); font-size: 16px; font-weight: 400; max-width: 500px; line-height: 1.7; }
+    .header p a { color: var(--blue); text-decoration: none; position: relative; transition: opacity 0.2s; }
+    .header p a::after { content: ''; position: absolute; left: 0; bottom: -2px; width: 100%; height: 1px; background: currentColor; opacity: 0.3; }
 
-  /* Section */
-  .section-title {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
-    color: var(--text-dim); padding-bottom: 12px;
-    border-bottom: 1px solid var(--border); margin-bottom: 20px;
-  }
+    /* Stats Dashboard */
+    .stats-container {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 64px;
+    }
+    .stat-box {
+      background: var(--surface-1); border: 1px solid var(--border);
+      padding: 24px; border-radius: 20px; position: relative; overflow: hidden;
+      transition: all 0.3s;
+    }
+    .stat-box:hover { border-color: var(--border-strong); transform: translateY(-2px); }
+    .stat-val { font-family: 'JetBrains Mono', monospace; font-size: 32px; font-weight: 600; display: block; margin-bottom: 4px; }
+    .stat-lab { font-size: 13px; color: var(--text-dim); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
 
-  /* Card Grid */
-  .card-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 16px;
-    margin-bottom: 40px;
-  }
+    /* Section Control */
+    .section-header {
+      display: flex; align-items: center; gap: 16px; margin-bottom: 24px;
+    }
+    .section-title {
+      font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600;
+      color: var(--text-main); text-transform: uppercase; letter-spacing: 2px;
+    }
+    .section-line { flex: 1; height: 1px; background: var(--border); }
 
-  /* Gallery Card */
-  .gallery-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-    text-decoration: none;
-    color: var(--text);
-    transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
-    display: block;
-  }
-  .gallery-card:hover {
-    border-color: var(--border-hover);
-    transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-  }
+    /* Grid & Cards */
+    .card-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px; margin-bottom: 56px;
+    }
 
-  .gallery-thumb {
-    width: 100%;
-    height: 200px;
-    overflow: hidden;
-    background: linear-gradient(135deg, #1a3a5c, #0f2234);
-  }
-  .gallery-thumb img {
-    width: 100%; height: 100%; object-fit: cover;
-    transition: transform 0.3s;
-  }
-  .gallery-card:hover .gallery-thumb img { transform: scale(1.06); }
+    .recipe-card {
+      background: var(--surface-1); border: 1px solid var(--border);
+      border-radius: 24px; overflow: hidden; text-decoration: none; color: inherit;
+      transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+      display: flex; flex-direction: column;
+    }
+    .recipe-card:hover {
+      transform: translateY(-8px); border-color: var(--border-strong);
+      box-shadow: var(--card-shadow);
+    }
 
-  .gallery-info { padding: 16px 18px 18px; }
+    .card-image-wrap {
+      aspect-ratio: 4/3; width: 100%; overflow: hidden; position: relative;
+      background: var(--surface-2);
+    }
+    .card-image-wrap img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+    }
+    .recipe-card:hover .card-image-wrap img { transform: scale(1.08); }
 
-  .gallery-category {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
-    color: var(--accent); background: var(--accent-soft);
-    display: inline-block; padding: 2px 7px; border-radius: 3px;
-    margin-bottom: 8px;
-  }
-  .gallery-category.streamer { color: var(--blue); background: var(--blue-soft); }
-  .gallery-category.nymph { color: #f59e0b; background: rgba(245,158,11,0.1); }
-  .gallery-category.dry-fly { color: #10b981; background: rgba(16,185,129,0.1); }
+    .card-content { padding: 24px; }
+    .card-tag {
+      font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600;
+      padding: 3px 10px; border-radius: 6px; display: inline-block; margin-bottom: 12px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .tag-chironomid { color: #f43f5e; background: rgba(244, 63, 94, 0.1); }
+    .tag-streamer { color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
+    
+    .card-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.3px; }
+    .card-desc { font-size: 14px; color: var(--text-dim); line-height: 1.6; font-weight: 300; margin-bottom: 20px; }
+    
+    .card-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-top: 16px; border-top: 1px solid var(--border);
+      font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-dim);
+    }
 
-  .gallery-name { font-size: 16px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.2px; }
-  .gallery-desc { font-size: 12px; color: var(--text-dim); font-weight: 300; line-height: 1.4; }
-  .gallery-meta {
-    display: flex; gap: 12px; margin-top: 10px;
-    font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim);
-  }
+    /* Empty Aesthetic */
+    .empty-state {
+      padding: 48px; border-radius: 24px; border: 1px dashed var(--border);
+      background: rgba(var(--surface-2), 0.3); text-align: center;
+      margin-bottom: 56px;
+    }
+    .empty-state p { font-size: 13px; color: var(--text-dim); letter-spacing: 0.5px; font-weight: 300; }
 
-  /* Empty */
-  .empty-section {
-    background: var(--surface); border: 1px dashed var(--border);
-    border-radius: 12px; padding: 32px; text-align: center;
-    color: var(--text-dim); font-size: 13px; margin-bottom: 40px;
-  }
+    /* Footer */
+    .footer {
+      margin-top: 100px; padding: 40px 0; border-top: 1px solid var(--border);
+      text-align: center; color: var(--text-dim); font-size: 12px;
+      font-family: 'JetBrains Mono', monospace; letter-spacing: 1px;
+    }
+    .footer a { color: var(--blue); text-decoration: none; }
 
-  /* Footer */
-  .footer {
-    margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--border);
-    text-align: center; color: var(--text-dim); font-size: 12px;
-    font-family: 'JetBrains Mono', monospace;
-  }
-  .footer a { color: var(--blue); text-decoration: none; }
-
-  @media (max-width: 640px) {
-    .card-grid { grid-template-columns: 1fr; }
-    .stats { flex-direction: column; }
-    .container { padding: 40px 16px 60px; }
-    .theme-toggle { top: 12px; right: 12px; width: 42px; height: 42px; font-size: 18px; }
-  }
-</style>
+    @media (max-width: 640px) {
+      .container { padding: 60px 20px; }
+      .header h2 { font-size: 32px; }
+      .stats-container { grid-template-columns: 1fr; }
+      .card-grid { grid-template-columns: 1fr; }
+      .theme-toggle { top: 20px; right: 20px; }
+    }
+  </style>
 </head>
 <body>
 
-<button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙</button>
+<button class="theme-toggle" id="themeBtn" title="화면 테마 전환" onclick="toggleTheme()">
+  <span id="themeIcon">🌙</span>
+</button>
 
 <div class="container">
 
-  <div class="header">
-    <h1>🪝 tying recipe</h1>
+  <header class="header">
+    <div class="header-badge">Collection 2026</div>
     <h2>타잉 레시피 카드</h2>
-    <p>재료와 순서만 간결하게. 전략·분석은 <a href="https://github.com/CADDIS-GR/fly-tying-archive">Fly Tying Archive</a>에서.</p>
-  </div>
+    <p>저수지 플라이 낚시를 위한 간결한 타이 레시피 아카이브. <br>자세한 전략과 분석은 <a href="https://github.com/CADDIS-GR/fly-tying-archive">Fly Tying Archive</a>에서 확인하세요.</p>
+  </header>
 
-  <div class="stats">
-    <div class="stat"><div class="stat-number">1</div><div class="stat-label">Cards</div></div>
-    <div class="stat"><div class="stat-number">1</div><div class="stat-label">Categories</div></div>
-    <div class="stat"><div class="stat-number">2026</div><div class="stat-label">Season</div></div>
+  <div class="stats-container">
+    <div class="stat-box">
+      <span class="stat-val">12</span>
+      <span class="stat-lab">Total Cards</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-val">04</span>
+      <span class="stat-lab">Categories</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-val">2026</span>
+      <span class="stat-lab">Active Season</span>
+    </div>
   </div>
 
   <!-- ===== CHIRONOMID ===== -->
-  <div class="section-title">chironomid</div>
+  <div class="section-header">
+    <span class="section-title">chironomid</span>
+    <div class="section-line"></div>
+  </div>
+  
   <div class="card-grid">
-
-    <a href="patterns/chironomid/red-wire-chironomid/" class="gallery-card">
-      <div class="gallery-thumb">
-        <img src="photos/red-wire-chironomid.jpg" alt="Red Wire Chironomid">
+    <a href="patterns/chironomid/red-wire-chironomid/" class="recipe-card">
+      <div class="card-image-wrap">
+        <!-- 제공해주신 GitHub 이미지 적용 -->
+        <img src="https://raw.githubusercontent.com/CADDIS-GR/tying-recipe/main/photos/red-wire-chironomid.jpg" alt="Red Wire Chironomid">
       </div>
-      <div class="gallery-info">
-        <div class="gallery-category">chironomid</div>
-        <div class="gallery-name">Red Wire Chironomid</div>
-        <div class="gallery-desc">블랙 바디 + 레드 와이어 리빙. 화이트 브리더 윙.</div>
-        <div class="gallery-meta">
-          <span>#14</span>
-          <span>2026-02-06</span>
+      <div class="card-content">
+        <span class="card-tag tag-chironomid">chironomid</span>
+        <h3 class="card-title">Red Wire Chironomid</h3>
+        <p class="card-desc">블랙 바디에 선명한 레드 와이어 리빙으로 포인트를 준 기본 패턴. 화이트 브리더 윙으로 가시성을 확보했습니다.</p>
+        <div class="card-footer">
+          <span>Hook #14</span>
+          <span>2026.02.06</span>
         </div>
       </div>
     </a>
-
-    <!-- 새 카드 추가 시 여기에 복사 -->
-
   </div>
 
   <!-- ===== STREAMER ===== -->
-  <div class="section-title">streamer</div>
-  <div class="empty-section">아직 등록된 카드 없음</div>
-
-  <!-- ===== NYMPH ===== -->
-  <div class="section-title">nymph</div>
-  <div class="empty-section">아직 등록된 카드 없음</div>
-
-  <!-- ===== DRY FLY ===== -->
-  <div class="section-title">dry fly</div>
-  <div class="empty-section">아직 등록된 카드 없음</div>
-
-  <div class="footer">
-    CADDIS-GR / <a href="https://github.com/CADDIS-GR/tying-recipe">tying-recipe</a>
+  <div class="section-header">
+    <span class="section-title">streamer</span>
+    <div class="section-line"></div>
   </div>
+  <div class="empty-state">
+    <p>WAITING FOR NEW DISCOVERY</p>
+  </div>
+
+  <!-- ===== OTHER PATTERNS ===== -->
+  <div class="section-header">
+    <span class="section-title">other patterns</span>
+    <div class="section-line"></div>
+  </div>
+  <div class="empty-state">
+    <p>COMING SOON</p>
+  </div>
+
+  <footer class="footer">
+    DESIGNED BY CADDIS-GR / <a href="https://github.com/CADDIS-GR/tying-recipe">GIT REPOSITORY</a>
+  </footer>
 
 </div>
 
 <script>
 function toggleTheme() {
   const html = document.documentElement;
-  const btn = document.getElementById('themeBtn');
+  const icon = document.getElementById('themeIcon');
   const isDark = html.getAttribute('data-theme') === 'dark';
-  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
-  btn.textContent = isDark ? '☀️' : '🌙';
+  
+  const nextTheme = isDark ? 'light' : 'dark';
+  html.setAttribute('data-theme', nextTheme);
+  icon.textContent = isDark ? '☀️' : '🌙';
+  
+  localStorage.setItem('preferred-theme', nextTheme);
 }
+
+window.onload = () => {
+  const savedTheme = localStorage.getItem('preferred-theme');
+  if (savedTheme) {
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    document.getElementById('themeIcon').textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+  }
+};
 </script>
 </body>
 </html>
